@@ -1,4 +1,6 @@
-function help() {
+#!/bin/bash
+
+function help {
 	echo "Usage: ./backup.sh [-c <catalog name> -a <archive name>] <extention list>"
 	exit 1
 }
@@ -38,11 +40,31 @@ fi
 
 mkdir $CATALOG_NAME
 
+touch $CATALOG_NAME/names_map.txt
+
 while [[ $# -gt 0 ]]
 do
-	for name in $(find ./test -name "*.$1")
+	last=""
+	num=0
+	for str in $(find ./test -name "*.$1" | awk -F/ -v ext=".$1" '{ print substr($NF, 1, length($NF) - length(ext)) "/" $0 }' | sort -r -k1) 
 	do
-		cp $name $CATALOG_NAME/${name##*/}
+		name=${str#*/}
+		sname=${str:0:${#str}-${#name} - 1}
+		if [[ "$last" = "$sname" ]]
+		then
+			num=$(( num + 1 ))
+			sname="${sname}(${num})"
+		elif [[ -z $(find ./${CATALOG_NAME} -name "${sname}.$1") ]]
+		then
+			last=$sname
+			num=0
+		else 
+			last=$sname
+			num=1
+			sname="${sname}(${num})"
+		fi
+		cp $name $CATALOG_NAME/${sname}.$1
+		echo "$name -> $sname.$1" >> $CATALOG_NAME/names_map.txt
 	done
 	shift
 done
