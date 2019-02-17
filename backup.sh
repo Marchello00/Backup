@@ -5,6 +5,26 @@ function help {
 	exit 1
 }
 
+function get_name {
+	if [[ $# -gt 1 ]]
+	then
+		ext=".$2"
+	else
+		ext=""
+	fi
+	if [[ -z $(find . -name "$1$ext") ]]
+	then
+		echo $1
+	else
+		num=1
+		while [[ -n $(find . -name "$1($num)$ext") ]]
+		do
+			num=$(( num+1 ))
+		done
+		echo "$1($num)"
+	fi
+}
+
 CATALOG_NAME="archive"
 ARCHIVE_NAME=$CATALOG_NAME
 
@@ -38,6 +58,9 @@ then
 	help
 fi
 
+CATALOG_NAME=$(get_name $CATALOG_NAME)
+ARCHIVE_NAME=$(get_name $ARCHIVE_NAME tar)
+
 mkdir $CATALOG_NAME
 
 touch $CATALOG_NAME/names_map.txt
@@ -69,5 +92,5 @@ do
 	shift
 done
 
-tar -cf ${ARCHIVE_NAME}.tar $CATALOG_NAME/*
+tar -cf $ARCHIVE_NAME.tar $CATALOG_NAME/*
 echo done
