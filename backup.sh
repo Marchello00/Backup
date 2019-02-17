@@ -27,6 +27,7 @@ function get_name {
 
 CATALOG_NAME="archive"
 ARCHIVE_NAME=$CATALOG_NAME
+DIRECTORY="."
 
 while [[ $# -gt 0 ]]
 do
@@ -39,6 +40,11 @@ do
 		;;
 	-a)
 		ARCHIVE_NAME="$2"
+		shift
+		shift
+		;;
+	-d)
+		DIRECTORY="$2"
 		shift
 		shift
 		;;
@@ -58,35 +64,35 @@ then
 	help
 fi
 
-CATALOG_NAME=$(get_name $CATALOG_NAME)
-ARCHIVE_NAME=$(get_name $ARCHIVE_NAME tar)
+CATALOG_NAME=$(get_name "$CATALOG_NAME")
+ARCHIVE_NAME=$(get_name "$ARCHIVE_NAME" tar)
 
-mkdir $CATALOG_NAME
+mkdir "$CATALOG_NAME"
 
-touch $CATALOG_NAME/names_map.txt
+touch "$CATALOG_NAME/names_map.txt"
 
 while [[ $# -gt 0 ]]
 do
 	last=""
 	num=0
-	for str in $(find ./test -name "*.$1" | awk -F/ -v ext=".$1" '{ print substr($NF, 1, length($NF) - length(ext)) "/" $0 }' | sort -r -k1) 
+	for str in $(find "$DIRECTORY" -name "*.$1" | awk -F/ -v ext=".$1" '{ print substr($NF, 1, length($NF) - length(ext))"/"$0 }' | sort -r -k1) 
 	do
-		name=${str#*/}
-		sname=${str:0:${#str}-${#name} - 1}
+		name="${str#*/}"
+		sname="${str:0:${#str}-${#name} - 1}"
 		if [[ "$last" = "$sname" ]]
 		then
 			num=$(( num + 1 ))
 			sname="${sname}(${num})"
-		elif [[ -z $(find ./${CATALOG_NAME} -name "${sname}.$1") ]]
+		elif [[ -z $(find "./${CATALOG_NAME}" -name "${sname}.$1") ]]
 		then
-			last=$sname
+			last="$sname"
 			num=0
 		else 
-			last=$sname
+			last="$sname"
 			num=1
 			sname="${sname}(${num})"
 		fi
-		cp $name $CATALOG_NAME/${sname}.$1
+		cp "$name" "$CATALOG_NAME/${sname}.$1"
 		echo "$name -> $sname.$1" >> $CATALOG_NAME/names_map.txt
 	done
 	shift
