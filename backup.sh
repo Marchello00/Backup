@@ -71,6 +71,9 @@ mkdir "$CATALOG_NAME"
 
 touch "$CATALOG_NAME/names_map.txt"
 
+oldifs="$IFS"
+IFS=$(echo -en "\n\b");
+
 while [[ $# -gt 0 ]]
 do
 	last=""
@@ -97,6 +100,8 @@ do
 	done
 	shift
 done
+
+IFS=$oldifs
 
 tar -cf $ARCHIVE_NAME.tar $CATALOG_NAME/*
 echo done
